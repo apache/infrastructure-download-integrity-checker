@@ -96,10 +96,14 @@ def verify_checksum(filepath: str, method: str):
     filename = os.path.basename(filepath)
     checksum_filepath = filepath + "." + method  # foo.sha256
     checksum_filename = os.path.basename(checksum_filepath)
-    checksum_options = open(checksum_filepath, "r").read().strip().split(" ")
+    errors = []
+    try:
+        checksum_options = open(checksum_filepath, "r", encoding="utf-8").read().strip().split(" ")
+    except UnicodeDecodeError as e:
+        errors.append(f"Checksum file {checksum_filename} contains garbage characters: {e}")
+        return errors
     checksum_on_disk = "".join(x.strip() for x in checksum_options if all(c in string.hexdigits for c in x.strip())).lower()
     checksum_calculated = digest(filepath, method)
-    errors = []
     if checksum_on_disk != checksum_calculated:
         errors.append(f"Checksum does not match checksum file {checksum_filename}!")
         errors.append(f"Calculated {method} checksum of {filename} was: {checksum_calculated}")
