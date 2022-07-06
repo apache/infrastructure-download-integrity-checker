@@ -98,7 +98,7 @@ def verify_checksum(filepath: str, method: str):
     checksum_filepath = filepath + "." + method  # foo.sha256
     checksum_filename = os.path.basename(checksum_filepath)
     checksum_options = open(checksum_filepath, "r").read().strip().split(" ")
-    checksum_on_disk = [chunk for chunk in checksum_options if all(char in string.hexdigits for char in chunk)][0]
+    checksum_on_disk = "".join(x.strip() for x in checksum_options if all(c in string.hexdigits for c in x)).lower()
     checksum_calculated = digest(filepath, method)
     errors = []
     if checksum_on_disk != checksum_calculated:
