@@ -1,7 +1,7 @@
 extra_recipients:  # Additional recipients beyond private@project.a.o
   - private@infra.apache.org
 gpg_homedir:  /tmp/toolchain  # GPG homedir (will create a subdir for each project)
-dist_dir:     /x1/dist/       # Where dist files are found
+dist_dir:     /dist/       # Where dist files are found
 strong_checksums:   # These checksum files MUST exist for newer releases (after 24 Oct 2021)
   - sha512
   - sha256
