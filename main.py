@@ -241,11 +241,11 @@ def main():
             errors = verify_files(project, keychain)
             time_taken = int(time.time() - start_time_project)
             if errors:
-                sys.stdout.write(f"FAILED! (scan time: {time_taken} seconds)\n")
+                sys.stdout.write(f"BAD! (scan time: {time_taken} seconds)\n")
                 sys.stdout.flush()
                 alert_project(project, errors)
             else:
-                sys.stdout.write(f"GOOD! (scan time: {time_taken} seconds)\n")
+                sys.stdout.write(f"ALL GOOD! (scan time: {time_taken} seconds)\n")
                 sys.stdout.flush()
         total_time_taken = int(time.time() - start_time)
         print(f"Done scanning {len(projects)} projects in {total_time_taken} seconds.")
