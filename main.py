@@ -134,6 +134,8 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
             extension = filename.split(".")[-1] if "." in filename else ""
             if extension in known_exts:
                 filepath = os.path.join(root, filename)
+                if os.path.islink(filepath):  # Skip symlinks
+                    continue
                 if "--quiet" not in sys.argv:
                     print(f"Verifying {filepath}")
                 valid_checksums_found = 0
