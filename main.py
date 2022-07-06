@@ -70,13 +70,13 @@ def alert_project(project: str, errors: list):
             print(errormsg)
 
 
-def load_keys(project: str) -> gnupg.GPG:
+def load_keys(project: str, is_podling: bool) -> gnupg.GPG:
     """Loads all keys found in KEYS files for a project and returns the GPG toolchain object holding said keys"""
-    project_dir = os.path.join(CFG["dist_dir"], project)
-    project_gpg_dir = os.path.join(CFG["gpg_homedir"], project)
+    project_dir = os.path.join(CFG["dist_dir"], project) if not is_podling else os.path.join(CFG["dist_dir"], "incubator", project)
+    project_gpg_dir = os.path.join(CFG["gpg_homedir"], project) if not is_podling else os.path.join(CFG["gpg_homedir"], "incubator", project)
     assert project and os.path.isdir(project_dir), f"Project not specified or no project dist directory found for {project}!"
     if not os.path.isdir(project_gpg_dir):
-        os.mkdir(project_gpg_dir)
+        os.makedirs(project_gpg_dir, exist_ok=True)
     keychain = gnupg.GPG(gnupghome=project_gpg_dir, use_agent=True)
     for root, dirs, files in os.walk(project_dir):
         for filename in files:
@@ -137,11 +137,11 @@ def push_error(edict: dict, filepath: str, errmsg: str):
         edict[filepath].append(errmsg)
 
 
-def verify_files(project: str, keychain: gnupg.GPG) -> dict:
+def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
     """Verifies all download artefacts in a directory using the supplied keychain. Returns a dict of filenames and
     their corresponding error messages if checksum or signature errors were found."""
     errors = dict()
-    path = os.path.join(CFG["dist_dir"], project)
+    path = os.path.join(CFG["dist_dir"], project) if not is_podling else os.path.join(CFG["dist_dir"], "incubator", project)
     known_exts = CFG.get("known_extensions")
     known_fingerprints = {key["keyid"]: key for key in keychain.list_keys()}
     strong_checksum_deadline = CFG.get("strong_checksum_deadline", 0)  # If applicable, only require sha1/md5 for older files
@@ -224,6 +224,11 @@ def main():
         print(f"Setting up GPG homedir in {gpg_home}")
         os.mkdir(gpg_home)
     projects = [x for x in os.listdir(CFG["dist_dir"]) if os.path.isdir(os.path.join(CFG["dist_dir"], x))]
+    # Weave in incubator podlings
+    projects.remove("incubator")
+    inc_dir = os.path.join(CFG["dist_dir"], "incubator")
+    podlings = [x for x in os.listdir(inc_dir) if os.path.isdir(os.path.join(inc_dir, x))]
+    projects.extend(podlings)
 
     # Quick hack for only scanning certain dirs by adding the project name(s) to the command line
     x_projects = []
@@ -237,8 +242,8 @@ def main():
         for project in sorted(projects):
             sys.stdout.write(f"- Scanning {project}...")
             start_time_project = time.time()
-            keychain = load_keys(project)
-            errors = verify_files(project, keychain)
+            keychain = load_keys(project, project in podlings)
+            errors = verify_files(project, keychain, project in podlings)
             time_taken = int(time.time() - start_time_project)
             if errors:
                 sys.stdout.write(f"BAD! (scan time: {time_taken} seconds)\n")
