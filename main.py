@@ -31,7 +31,9 @@ CFG = yaml.safe_load(open("./checker.yaml"))
 assert CFG.get("gpg_homedir"), "Please specify a homedir for the GPG keychain!"
 
 WHIMSY_MAIL_MAP = "https://whimsy.apache.org/public/committee-info.json"
+WHIMSY_PROJECTS_LIST = "https://whimsy.apache.org/public/public_ldap_projects.json"
 MAIL_MAP = requests.get(WHIMSY_MAIL_MAP).json()["committees"]
+PROJECTS_LIST = requests.get(WHIMSY_PROJECTS_LIST).json()["projects"]
 EMAIL_TEMPLATE = open("email-template.txt", "r").read()
 INTERVAL = 1800  # Sleep for 30 min if --forever is set, then repeat
 CHECKSUM_LENGTHS = {
@@ -45,6 +47,8 @@ CHECKSUM_LENGTHS = {
 def alert_project(project: str, errors: list):
     """Sends a notification to the project and infra aboot errors that were found"""
     if errors:
+        if project not in PROJECTS_LIST:  # Only notify for actual, existing projects
+            return
         project_list = f"private@{project}.apache.org"  # Standard naming
         if project in MAIL_MAP:
             project_list = f"private@{MAIL_MAP[project]['mail_list']}.apache.org"  # Special case for certain committees
