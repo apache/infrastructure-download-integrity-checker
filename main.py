@@ -42,7 +42,6 @@ def alert_project(project: str, errors: list):
         project_list = f"private@{project}.apache.org"  # Standard naming
         if project in MAIL_MAP:
             project_list = f"private@{MAIL_MAP[project]['mail_list']}.apache.org"  # Special case for certain committees
-        print(f"Dispatching notification to {project_list}!")
         recipients = [project_list]
         extra_recips = CFG.get("extra_recipients")
         if isinstance(extra_recips, list):
@@ -54,6 +53,7 @@ def alert_project(project: str, errors: list):
                 errormsg += f" - {errorline}\n"
             errormsg += "\n"
         if "--debug" not in sys.argv:  # Don't send emails if --debug is specified
+            print(f"Dispatching email to: {recipients}")
             asfpy.messaging.mail(
                 sender="ASF Infrastructure <root@apache.org>",
                 subject=f"Verification of download artefacts on dist.apache.org FAILED for {project}!",
