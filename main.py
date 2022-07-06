@@ -142,6 +142,7 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
                 if "--quiet" not in sys.argv:
                     print(f"Verifying {filepath}")
                 valid_checksums_found = 0
+                valid_weak_checksums_found = 0
                 # Verify strong checksums
                 for method in CFG.get("strong_checksums"):
                     chkfile = filepath + "." + method
@@ -152,24 +153,27 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
                         else:
                             valid_checksums_found += 1
 
-                # If no valid strong checksums, but the files are older, check against sha1 and md5?
-                if valid_checksums_found == 0 and os.stat(filepath).st_mtime <= strong_checksum_deadline:
-
-                    for method in CFG.get("weak_checksums"):
-                        chkfile = filepath + "." + method
-                        if os.path.exists(chkfile):
-                            file_errors = verify_checksum(filepath, method)
-                            if file_errors:
-                                push_error(errors, filepath, file_errors)
-                            else:
+                # Check older algos, but only count if release is old enough
+                for method in CFG.get("weak_checksums"):
+                    chkfile = filepath + "." + method
+                    if os.path.exists(chkfile):
+                        file_errors = verify_checksum(filepath, method)
+                        if file_errors:
+                            push_error(errors, filepath, file_errors)
+                        else:
+                            valid_weak_checksums_found += 1
+                            if valid_checksums_found == 0 and os.stat(filepath).st_mtime <= strong_checksum_deadline:
                                 valid_checksums_found += 1
-                    # Ensure we had at least one valid checksum file of any kind.
-                    if valid_checksums_found == 0:
-                        push_error(errors, filepath, f"No valid checksum files (.md5, .sha1, .sha256, .sha512) found for {filename}")
+
+                # Ensure we had at least one valid checksum file of any kind (for old files).
+                if valid_checksums_found == 0 and os.stat(filepath).st_mtime <= strong_checksum_deadline:
+                    push_error(errors, filepath, f"No valid checksum files (.md5, .sha1, .sha256, .sha512) found for {filename}")
 
                 # Ensure we had at least one (valid) sha256 or sha512 file if strong checksums are enforced.
                 elif valid_checksums_found == 0:
                     push_error(errors, filepath, f"No valid checksum files (.sha256, .sha512) found for {filename}")
+                    if valid_weak_checksums_found:
+                        push_error(errors, filepath, f"Only weak checksum files (.md5, .sha1) found for {filename}. Project MUST use sha256/sha512!")
 
                 # Verify detached signatures
                 asc_filepath = filepath + ".asc"
