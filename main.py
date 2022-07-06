@@ -61,8 +61,7 @@ def alert_project(project: str, errors: list):
                 message=EMAIL_TEMPLATE.format(**locals())
             )
         else:
-            print("Debug flag active, not sending email. But it would have looked like this:\n")
-            print(EMAIL_TEMPLATE.format(**locals()))
+            print(errormsg)
 
 
 def load_keys(project: str) -> gnupg.GPG:
@@ -184,6 +183,8 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
 
 
 def main():
+    if "--debug" in sys.argv:
+        print("DEBUG MODE ENABLED. No emails will be sent.")
     start_time = time.time()
     gpg_home = CFG["gpg_homedir"]
     if not os.path.isdir(gpg_home):
