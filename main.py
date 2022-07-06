@@ -106,6 +106,8 @@ def verify_checksum(filepath: str, method: str):
     """Verifies a filepath against its checksum file, given a checksum method. Returns a list of errors if any found"""
     filename = os.path.basename(filepath)
     checksum_filepath = filepath + "." + method  # foo.sha256
+    if not os.path.exists(checksum_filepath):
+        checksum_filepath = filepath + "." + method.upper()  # foo.SHA256 fallback
     checksum_filename = os.path.basename(checksum_filepath)
     errors = []
     try:
@@ -176,7 +178,8 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                 # Verify strong checksums
                 for method in CFG.get("strong_checksums"):
                     chkfile = filepath + "." + method
-                    if os.path.exists(chkfile):
+                    chkfile_uc = filepath + "." + method.upper()  # Uppercase extension? :(
+                    if os.path.exists(chkfile) or os.path.exists(chkfile_uc):
                         file_errors = verify_checksum(filepath, method)
                         if file_errors:
                             push_error(errors, filepath, file_errors)
@@ -186,7 +189,8 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                 # Check older algos, but only count if release is old enough
                 for method in CFG.get("weak_checksums"):
                     chkfile = filepath + "." + method
-                    if os.path.exists(chkfile):
+                    chkfile_uc = filepath + "." + method.upper()  # Uppercase extension? :(
+                    if os.path.exists(chkfile) or os.path.exists(chkfile_uc):
                         file_errors = verify_checksum(filepath, method)
                         if file_errors:
                             push_error(errors, filepath, file_errors)
