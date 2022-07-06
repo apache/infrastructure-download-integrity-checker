@@ -215,6 +215,7 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
                         if verified.key_id not in known_fingerprints:
+
                             push_error(errors, filepath, f"The signature file {filename} was signed with a key not found in the project's KEYS file: {verified.key_id}")
                         else:
                             fp = known_fingerprints[verified.key_id]
@@ -226,6 +227,8 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                             # Otherwise, check for anything that isn't "signature valid"
                             elif verified.status != "signature valid":
                                 push_error(errors, filepath, f"Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
+                else:
+                    push_error(errors, filepath, f"No detached signature file could be found for {filename} - all artefact bundles MUST have an accompanying .asc signature file!")
     return errors
 
 
