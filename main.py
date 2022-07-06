@@ -48,9 +48,9 @@ def alert_project(project: str, errors: list):
             recipients.extend(extra_recips)
         errormsg = ""
         for filepath, errorlines in errors.items():
-            errormsg += f"Errors were found while verifying {filepath}:\n"
+            errormsg += f"  - Errors were found while verifying {filepath}:\n"
             for errorline in errorlines:
-                errormsg += f" - {errorline}\n"
+                errormsg += f"    - {errorline}\n"
             errormsg += "\n"
         if "--debug" not in sys.argv:  # Don't send emails if --debug is specified
             print(f"Dispatching email to: {recipients}")
@@ -216,15 +216,19 @@ def main():
 
     while True:
         for project in sorted(projects):
-            print(f"Scanning {project}")
+            sys.stdout.write(f"- Scanning {project}...")
             start_time_project = time.time()
             keychain = load_keys(project)
             errors = verify_files(project, keychain)
             if errors:
-                print(f"Errors were found while verifying {project}!")
+                sys.stdout.write("FAILED!\n")
+                sys.stdout.flush()
                 alert_project(project, errors)
+            else:
+                sys.stdout.write("GOOD!\n")
+                sys.stdout.flush()
             time_taken = int(time.time() - start_time_project)
-            print(f"{project} scanned in {time_taken} seconds.")
+            print(f"- {project} scanned in {time_taken} seconds.\n\n")
         total_time_taken = int(time.time() - start_time)
         print(f"Done scanning {len(projects)} projects in {total_time_taken} seconds.")
         if "--forever" in sys.argv:
