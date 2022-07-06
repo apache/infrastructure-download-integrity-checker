@@ -71,7 +71,7 @@ def load_keys(project: str) -> gnupg.GPG:
     assert project and os.path.isdir(project_dir), f"Project not specified or no project dist directory found for {project}!"
     if not os.path.isdir(project_gpg_dir):
         os.mkdir(project_gpg_dir)
-    keychain = gnupg.GPG(gnupghome=project_gpg_dir)
+    keychain = gnupg.GPG(gnupghome=project_gpg_dir, use_agent=True)
     for root, dirs, files in os.walk(project_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
@@ -157,12 +157,12 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
 
                     for method in CFG.get("weak_checksums"):
                         chkfile = filepath + "." + method
-                    if os.path.exists(chkfile):
-                        file_errors = verify_checksum(filepath, method)
-                        if file_errors:
-                            push_error(errors, filepath, file_errors)
-                        else:
-                            valid_checksums_found += 1
+                        if os.path.exists(chkfile):
+                            file_errors = verify_checksum(filepath, method)
+                            if file_errors:
+                                push_error(errors, filepath, file_errors)
+                            else:
+                                valid_checksums_found += 1
                     # Ensure we had at least one valid checksum file of any kind.
                     if valid_checksums_found == 0:
                         push_error(errors, filepath, f"No valid checksum files (.md5, .sha1, .sha256, .sha512) found for {filename}")
