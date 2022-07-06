@@ -205,7 +205,7 @@ def main():
         projects = x_projects
 
     while True:
-        for project in projects:
+        for project in sorted(projects):
             print(f"Scanning {project}")
             start_time_project = time.time()
             keychain = load_keys(project)
