@@ -189,7 +189,7 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
                             # Check if key expired before signing
                             if fp_expires < int(verified.sig_timestamp):
                                 fp_owner = fp["uids"][0]
-                                push_error(errors, filepath, f"Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key has expired!")
+                                push_error(errors, filepath, f"Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key expired before the file was signed!")
                             # Otherwise, check for anything that isn't "signature valid"
                             elif verified.status != "signature valid":
                                 push_error(errors, filepath, f"Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
