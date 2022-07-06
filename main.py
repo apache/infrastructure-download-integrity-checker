@@ -34,6 +34,12 @@ WHIMSY_MAIL_MAP = "https://whimsy.apache.org/public/committee-info.json"
 MAIL_MAP = requests.get(WHIMSY_MAIL_MAP).json()["committees"]
 EMAIL_TEMPLATE = open("email-template.txt", "r").read()
 INTERVAL = 1800  # Sleep for 30 min if --forever is set, then repeat
+CHECKSUM_LENGTHS = {
+    "md5": 128,
+    "sha1": 160,
+    "sha256": 256,
+    "sha512": 512,
+}
 
 
 def alert_project(project: str, errors: list):
@@ -112,6 +118,12 @@ def verify_checksum(filepath: str, method: str):
         errors.append(f"Checksum does not match checksum file {checksum_filename}!")
         errors.append(f"Calculated {method} checksum of {filename} was: {checksum_calculated}")
         errors.append(f"Checksum file {checksum_filename} said it should have been: {checksum_on_disk}")
+        # Simple check for whether this file is just typoed.
+        if len(checksum_on_disk) != CHECKSUM_LENGTHS[method]/4:  # Wrong filetype??
+            for m, l in CHECKSUM_LENGTHS.items():
+                if len(checksum_on_disk) == l/4:
+                    errors.append(f"{checksum_filename} looks like it could be a {m} checksum, but has a {method} extension!")
+                    break
     return errors
 
 
