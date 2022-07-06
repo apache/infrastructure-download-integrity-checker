@@ -35,6 +35,7 @@ MAIL_MAP = requests.get(WHIMSY_MAIL_MAP).json()["committees"]
 EMAIL_TEMPLATE = open("email-template.txt", "r").read()
 INTERVAL = 1800  # Sleep for 30 min if --forever is set, then repeat
 
+
 def alert_project(project: str, errors: list):
     """Sends a notification to the project and infra aboot errors that were found"""
     if errors:
@@ -76,7 +77,8 @@ def load_keys(project: str) -> gnupg.GPG:
         for filename in files:
             filepath = os.path.join(root, filename)
             if filename in ["KEYS", "KEYS.txt"]:
-                print(f"Loading {filepath} into toolchain")
+                if "--quiet" not in sys.argv:
+                    print(f"Loading {filepath} into toolchain")
                 keychain.import_keys(open(filepath, "rb").read())
     return keychain
 
@@ -129,7 +131,8 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
             extension = filename.split(".")[-1] if "." in filename else ""
             if extension in known_exts:
                 filepath = os.path.join(root, filename)
-                print(f"Verifying {filepath}")
+                if "--quiet" not in sys.argv:
+                    print(f"Verifying {filepath}")
                 valid_checksums_found = 0
                 # Verify strong checksums
                 for method in CFG.get("strong_checksums"):
