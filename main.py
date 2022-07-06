@@ -98,8 +98,11 @@ def verify_checksum(filepath: str, method: str):
     checksum_filename = os.path.basename(checksum_filepath)
     errors = []
     try:
-        checksum_options = open(checksum_filepath, "r", encoding="utf-8").read().strip().split(" ")
-    except UnicodeDecodeError as e:
+        try:
+            checksum_options = open(checksum_filepath, "r", encoding="utf-8").read().strip().split(" ")
+        except UnicodeDecodeError:  # UTF-16??
+            checksum_options = open(checksum_filepath, "r", encoding="utf-16").read().strip().split(" ")
+    except UnicodeError as e:
         errors.append(f"Checksum file {checksum_filename} contains garbage characters: {e}")
         return errors
     checksum_on_disk = "".join(x.strip() for x in checksum_options if all(c in string.hexdigits for c in x.strip())).lower()
