@@ -1,0 +1,12 @@
+The following errors were detected in your distribution directory during a routine check:
+
+{errormsg}
+
+Please address these issues AS SOON AS POSSIBLE.
+Failure to comply within a reasonable timeframe will result in these files being pulled from
+the distribution services by ASF Infrastructure.
+
+If you have any questions or remarks, please let us know at: private@infra.apache.org
+
+With regards,
+ASF Infrastructure.
