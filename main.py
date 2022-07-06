@@ -68,6 +68,7 @@ def alert_project(project: str, errors: list):
             )
         else:
             print(errormsg)
+            sys.stdout.flush()
 
 
 def load_keys(project: str, is_podling: bool) -> gnupg.GPG:
