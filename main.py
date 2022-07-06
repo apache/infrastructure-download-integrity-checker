@@ -131,7 +131,7 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
     errors = dict()
     path = os.path.join(CFG["dist_dir"], project)
     known_exts = CFG.get("known_extensions")
-    known_fingerprints = {key["fingerprint"]: key for key in keychain.list_keys()}
+    known_fingerprints = {key["keyid"]: key for key in keychain.list_keys()}
     strong_checksum_deadline = CFG.get("strong_checksum_deadline", 0)  # If applicable, only require sha1/md5 for older files
     for root, dirs, files in os.walk(path):
         for filename in sorted(files):
@@ -181,15 +181,15 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
                 if os.path.exists(asc_filepath):
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
-                        if verified.fingerprint not in known_fingerprints:
-                            push_error(errors, filepath, f"The signature file {filename} was signed with a fingerprint not found in the project's KEYS file: {verified.fingerprint}")
+                        if verified.key_id not in known_fingerprints:
+                            push_error(errors, filepath, f"The signature file {filename} was signed with a key not found in the project's KEYS file: {verified.key_id}")
                         else:
-                            fp = known_fingerprints[verified.fingerprint]
+                            fp = known_fingerprints[verified.key_id]
                             fp_expires = int(fp["expires"])
                             # Check if key expired before signing
                             if fp_expires < int(verified.sig_timestamp):
                                 fp_owner = fp["uids"][0]
-                                push_error(errors, filepath, f"Detached signature file {filename}.asc was signed by {fp_owner} ({verified.fingerprint}) but the key has expired!")
+                                push_error(errors, filepath, f"Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key has expired!")
                             # Otherwise, check for anything that isn't "signature valid"
                             elif verified.status != "signature valid":
                                 push_error(errors, filepath, f"Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
