@@ -220,15 +220,14 @@ def main():
             start_time_project = time.time()
             keychain = load_keys(project)
             errors = verify_files(project, keychain)
+            time_taken = int(time.time() - start_time_project)
             if errors:
-                sys.stdout.write("FAILED!\n")
+                sys.stdout.write(f"FAILED! (scan time: {time_taken} seconds)\n")
                 sys.stdout.flush()
                 alert_project(project, errors)
             else:
-                sys.stdout.write("GOOD!\n")
+                sys.stdout.write(f"GOOD! (scan time: {time_taken} seconds)\n")
                 sys.stdout.flush()
-            time_taken = int(time.time() - start_time_project)
-            print(f"- {project} scanned in {time_taken} seconds.\n\n")
         total_time_taken = int(time.time() - start_time)
         print(f"Done scanning {len(projects)} projects in {total_time_taken} seconds.")
         if "--forever" in sys.argv:
