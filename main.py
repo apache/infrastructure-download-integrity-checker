@@ -145,6 +145,10 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
     known_exts = CFG.get("known_extensions")
     known_fingerprints = {key["keyid"]: key for key in keychain.list_keys()}
     strong_checksum_deadline = CFG.get("strong_checksum_deadline", 0)  # If applicable, only require sha1/md5 for older files
+    # Check that we HAVE keys in the key chain
+    if not keychain.list_keys():
+        push_error(errors, "KEYS", "KEYS file could not be read or did not contain any valid signing keys!")
+    # Now check all files...
     for root, dirs, files in os.walk(path):
         for filename in sorted(files):
             extension = filename.split(".")[-1] if "." in filename else ""
