@@ -127,7 +127,7 @@ def verify_files(project: str, keychain: gnupg.GPG) -> dict:
     known_fingerprints = {key["fingerprint"]: key for key in keychain.list_keys()}
     strong_checksum_deadline = CFG.get("strong_checksum_deadline", 0)  # If applicable, only require sha1/md5 for older files
     for root, dirs, files in os.walk(path):
-        for filename in files:
+        for filename in sorted(files):
             extension = filename.split(".")[-1] if "." in filename else ""
             if extension in known_exts:
                 filepath = os.path.join(root, filename)
