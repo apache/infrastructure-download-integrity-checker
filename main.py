@@ -112,7 +112,12 @@ def verify_checksum(filepath: str, method: str):
     except UnicodeError as e:
         errors.append(f"Checksum file {checksum_filename} contains garbage characters: {e}")
         return errors
-    checksum_options = checksum_value.replace("\n", "").replace("\r", "").split(" ")
+    checksum_value_trimmed = ""
+    # Strip away comment lines first
+    for line in checksum_value.split("\n"):
+        if not line.startswith("//") and not line.startswith("#"):
+            checksum_value_trimmed += line.strip() + " "
+    checksum_options = checksum_value_trimmed.split(" ")
     checksum_on_disk = "".join(x.strip() for x in checksum_options if all(c in string.hexdigits for c in x.strip())).lower()
     checksum_calculated = digest(filepath, method)
     if checksum_on_disk != checksum_calculated:
