@@ -215,8 +215,7 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
                         if verified.key_id not in known_fingerprints:
-
-                            push_error(errors, filepath, f"[CHK01] The signature file {filename} was signed with a key not found in the project's KEYS file: {verified.key_id}")
+                            push_error(errors, filepath, f"[CHK01] The signature file {filename}.asc was signed with a key not found in the project's KEYS file: {verified.key_id}")
                         else:
                             fp = known_fingerprints[verified.key_id]
                             fp_expires = int(fp["expires"])
