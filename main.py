@@ -256,6 +256,7 @@ def main():
             x_projects.append(arg)
     if x_projects:
         projects = x_projects
+    projects = [p for p in projects if f"-{p}" not in sys.argv]  # to exclude POI: main.py -poi
 
     while True:
         for project in sorted(projects):
