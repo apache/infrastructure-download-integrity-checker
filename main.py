@@ -66,7 +66,7 @@ def alert_project(project: str, errors: list):
             print(f"Dispatching email to: {recipients}")
             asfpy.messaging.mail(
                 sender="ASF Infrastructure <root@apache.org>",
-                subject=f"Verification of download artefacts on dist.apache.org FAILED for {project}!",
+                subject=f"Verification of download artifacts on dist.apache.org FAILED for {project}!",
                 recipients=recipients,
                 message=EMAIL_TEMPLATE.format(**locals())
             )
@@ -150,7 +150,7 @@ def push_error(edict: dict, filepath: str, errmsg: str):
 
 
 def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
-    """Verifies all download artefacts in a directory using the supplied keychain. Returns a dict of filenames and
+    """Verifies all download artifacts in a directory using the supplied keychain. Returns a dict of filenames and
     their corresponding error messages if checksum or signature errors were found."""
     errors = dict()
     path = os.path.join(CFG["dist_dir"], project) if not is_podling else os.path.join(CFG["dist_dir"], "incubator", project)
@@ -227,7 +227,7 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                             elif verified.status != "signature valid":
                                 push_error(errors, filepath, f"[CHK05] Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
                 else:
-                    push_error(errors, filepath, f"[CHK05] No detached signature file could be found for {filename} - all artefact bundles MUST have an accompanying .asc signature file!")
+                    push_error(errors, filepath, f"[CHK05] No detached signature file could be found for {filename} - all artifact bundles MUST have an accompanying .asc signature file!")
     return errors
 
 
