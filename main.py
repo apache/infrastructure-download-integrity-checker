@@ -116,7 +116,7 @@ def verify_checksum(filepath: str, method: str):
         except UnicodeDecodeError:  # UTF-16??
             checksum_value = open(checksum_filepath, "r", encoding="utf-16").read()
     except UnicodeError as e:
-        errors.append(f"Checksum file {checksum_filename} contains garbage characters: {e}")
+        errors.append(f"[CHK06] Checksum file {checksum_filename} contains garbage characters: {e}")
         return errors
     checksum_value_trimmed = ""
     # Strip away comment lines first
@@ -127,14 +127,14 @@ def verify_checksum(filepath: str, method: str):
     checksum_on_disk = "".join(x.strip() for x in checksum_options if all(c in string.hexdigits for c in x.strip())).lower()
     checksum_calculated = digest(filepath, method)
     if checksum_on_disk != checksum_calculated:
-        errors.append(f"Checksum does not match checksum file {checksum_filename}!")
-        errors.append(f"Calculated {method} checksum of {filename} was: {checksum_calculated}")
-        errors.append(f"Checksum file {checksum_filename} said it should have been: {checksum_on_disk}")
+        errors.append(f"[CHK06] Checksum does not match checksum file {checksum_filename}!")
+        errors.append(f"[CHK06] Calculated {method} checksum of {filename} was: {checksum_calculated}")
+        errors.append(f"[CHK06] Checksum file {checksum_filename} said it should have been: {checksum_on_disk}")
         # Simple check for whether this file is just typoed.
         if len(checksum_on_disk) != CHECKSUM_LENGTHS[method]/4:  # Wrong filetype??
             for m, l in CHECKSUM_LENGTHS.items():
                 if len(checksum_on_disk) == l/4:
-                    errors.append(f"{checksum_filename} looks like it could be a {m} checksum, but has a {method} extension!")
+                    errors.append(f"[CHK06] {checksum_filename} looks like it could be a {m} checksum, but has a {method} extension!")
                     break
     return errors
 
@@ -162,7 +162,7 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
         dl_files = os.listdir(path)
         if not dl_files or (len(dl_files) == 1 and dl_files[0] == ".htaccess"):  # Attic'ed project, skip it!
             return errors
-        push_error(errors, "KEYS", "KEYS file could not be read or did not contain any valid signing keys!")
+        push_error(errors, "KEYS", "[CHK03] KEYS file could not be read or did not contain any valid signing keys!")
     # Now check all files...
     for root, dirs, files in os.walk(path):
         for filename in sorted(files):
@@ -201,13 +201,13 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
 
                 # Ensure we had at least one valid checksum file of any kind (for old files).
                 if valid_checksums_found == 0 and os.stat(filepath).st_mtime <= strong_checksum_deadline:
-                    push_error(errors, filepath, f"No valid checksum files (.md5, .sha1, .sha256, .sha512) found for {filename}")
+                    push_error(errors, filepath, f"[CHK02] No valid checksum files (.md5, .sha1, .sha256, .sha512) found for {filename}")
 
                 # Ensure we had at least one (valid) sha256 or sha512 file if strong checksums are enforced.
                 elif valid_checksums_found == 0:
-                    push_error(errors, filepath, f"No valid checksum files (.sha256, .sha512) found for {filename}")
+                    push_error(errors, filepath, f"[CHK02] No valid checksum files (.sha256, .sha512) found for {filename}")
                     if valid_weak_checksums_found:
-                        push_error(errors, filepath, f"Only weak checksum files (.md5, .sha1) found for {filename}. Project MUST use sha256/sha512!")
+                        push_error(errors, filepath, f"[CHK02] Only weak checksum files (.md5, .sha1) found for {filename}. Project MUST use sha256/sha512!")
 
                 # Verify detached signatures
                 asc_filepath = filepath + ".asc"
@@ -216,19 +216,19 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                     if not verified.valid:
                         if verified.key_id not in known_fingerprints:
 
-                            push_error(errors, filepath, f"The signature file {filename} was signed with a key not found in the project's KEYS file: {verified.key_id}")
+                            push_error(errors, filepath, f"[CHK01] The signature file {filename} was signed with a key not found in the project's KEYS file: {verified.key_id}")
                         else:
                             fp = known_fingerprints[verified.key_id]
                             fp_expires = int(fp["expires"])
                             # Check if key expired before signing
                             if fp_expires < int(verified.sig_timestamp):
                                 fp_owner = fp["uids"][0]
-                                push_error(errors, filepath, f"Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key expired before the file was signed!")
+                                push_error(errors, filepath, f"[CHK04] Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key expired before the file was signed!")
                             # Otherwise, check for anything that isn't "signature valid"
                             elif verified.status != "signature valid":
-                                push_error(errors, filepath, f"Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
+                                push_error(errors, filepath, f"[CHK05] Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
                 else:
-                    push_error(errors, filepath, f"No detached signature file could be found for {filename} - all artefact bundles MUST have an accompanying .asc signature file!")
+                    push_error(errors, filepath, f"[CHK05] No detached signature file could be found for {filename} - all artefact bundles MUST have an accompanying .asc signature file!")
     return errors
 
 
