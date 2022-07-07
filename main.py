@@ -237,6 +237,12 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
 def main():
     if "--debug" in sys.argv:
         print("DEBUG MODE ENABLED. No emails will be sent.")
+    if "--debug_plugin" in sys.argv:
+        import logging
+        logger = logging.getLogger('gnupg')
+        logger.setLevel('DEBUG')
+        logger.addHandler(logging.StreamHandler())
+        logger.debug("Plugin debug enabled.")
     start_time = time.time()
     gpg_home = CFG["gpg_homedir"]
     if not os.path.isdir(gpg_home):
