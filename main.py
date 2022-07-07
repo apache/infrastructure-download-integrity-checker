@@ -215,7 +215,10 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
                         if verified.key_id not in known_fingerprints:
-                            push_error(errors, filepath, f"[CHK01] The signature file {filename}.asc was signed with a key not found in the project's KEYS file: {verified.key_id}")
+                            if "gpg-exit" in verified.key_id:  # HACK: gpg-exit key ID means gpg crashed.
+                                push_error(errors, filepath, f"[CHK05] The signature file {filename}.asc could not be used to verify the release artifact (corrupt sig?)")
+                            else:
+                                push_error(errors, filepath, f"[CHK01] The signature file {filename}.asc was signed with a key not found in the project's KEYS file: {verified.key_id}")
                         else:
                             fp = known_fingerprints[verified.key_id]
                             fp_expires = int(fp["expires"])
