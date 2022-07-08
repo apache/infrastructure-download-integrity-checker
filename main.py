@@ -214,6 +214,8 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                 if os.path.exists(asc_filepath):
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
+                        if "--debug" in sys.argv:
+                            print(f"key_id: {verified.key_id} status: '{verified.status}' key_status: '{verified.key_status}' file: {asc_filepath}")
                         if verified.key_id not in known_fingerprints:
                             if "gpg-exit" in verified.key_id:  # HACK: gpg-exit key ID means gpg crashed.
                                 push_error(errors, filepath, f"[CHK05] The signature file {filename}.asc could not be used to verify the release artifact (corrupt sig?)")
@@ -266,7 +268,7 @@ def main():
 
     while True:
         for project in sorted(projects):
-            sys.stdout.write(f"- Scanning {project}...")
+            sys.stdout.write(f"- Scanning {project}...\n")
             start_time_project = time.time()
             keychain = load_keys(project, project in podlings)
             errors = verify_files(project, keychain, project in podlings)
