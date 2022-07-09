@@ -140,7 +140,7 @@ def verify_checksum(filepath: str, method: str) -> list:
     return errors
 
 
-def push_error(edict: dict, filepath: str, errmsg: typing.Any[str, list]):
+def push_error(edict: dict, filepath: str, errmsg: typing.Union[str, list]):
     """Push an error message to the error dict, creating an entry if none exists, otherwise appending to it"""
     if filepath not in edict:
         edict[filepath] = list()
