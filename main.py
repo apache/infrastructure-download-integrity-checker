@@ -83,7 +83,7 @@ def load_keys(project: str, is_podling: bool) -> gnupg.GPG:
     if not os.path.isdir(project_gpg_dir):
         os.makedirs(project_gpg_dir, exist_ok=True)
     keychain = gnupg.GPG(gnupghome=project_gpg_dir, use_agent=True)
-    for root, dirs, files in os.walk(project_dir):
+    for root, _dirs, files in os.walk(project_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
             if filename in ["KEYS", "KEYS.txt"]:
@@ -164,7 +164,7 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
             return errors
         push_error(errors, "KEYS", "[CHK03] KEYS file could not be read or did not contain any valid signing keys!")
     # Now check all files...
-    for root, dirs, files in os.walk(path):
+    for root, _dirs, files in os.walk(path):
         for filename in sorted(files):
             extension = filename.split(".")[-1] if "." in filename else ""
             if extension in known_exts:
