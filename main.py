@@ -25,6 +25,7 @@ import requests
 import time
 import sys
 import string
+import typing
 
 CHUNK_SIZE = 4096
 CFG = yaml.safe_load(open("./checker.yaml"))
@@ -44,7 +45,7 @@ CHECKSUM_LENGTHS = {
 }
 
 
-def alert_project(project: str, errors: list):
+def alert_project(project: str, errors: dict):
     """Sends a notification to the project and infra aboot errors that were found"""
     if errors:
         if project not in PROJECTS_LIST:  # Only notify for actual, existing projects
@@ -93,7 +94,7 @@ def load_keys(project: str, is_podling: bool) -> gnupg.GPG:
     return keychain
 
 
-def digest(filepath: str, method: str):
+def digest(filepath: str, method: str) -> str:
     """Calculates and returns the checksum of a file given a file path and a digest method (sha256, sha512 etc)"""
     digester = hashlib.new(method)
     with open(filepath, "rb") as file:
@@ -102,7 +103,7 @@ def digest(filepath: str, method: str):
     return digester.hexdigest()
 
 
-def verify_checksum(filepath: str, method: str):
+def verify_checksum(filepath: str, method: str) -> list:
     """Verifies a filepath against its checksum file, given a checksum method. Returns a list of errors if any found"""
     filename = os.path.basename(filepath)
     checksum_filepath = filepath + "." + method  # foo.sha256
@@ -139,7 +140,7 @@ def verify_checksum(filepath: str, method: str):
     return errors
 
 
-def push_error(edict: dict, filepath: str, errmsg: str):
+def push_error(edict: dict, filepath: str, errmsg: typing.Any[str, list]):
     """Push an error message to the error dict, creating an entry if none exists, otherwise appending to it"""
     if filepath not in edict:
         edict[filepath] = list()
@@ -152,7 +153,7 @@ def push_error(edict: dict, filepath: str, errmsg: str):
 def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
     """Verifies all download artifacts in a directory using the supplied keychain. Returns a dict of filenames and
     their corresponding error messages if checksum or signature errors were found."""
-    errors = dict()
+    errors: typing.Dict[str, str] = dict()
     path = os.path.join(CFG["dist_dir"], project) if not is_podling else os.path.join(CFG["dist_dir"], "incubator", project)
     known_exts = CFG.get("known_extensions")
     known_fingerprints = {key["keyid"]: key for key in keychain.list_keys()}
