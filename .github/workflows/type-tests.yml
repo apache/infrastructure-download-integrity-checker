@@ -1,8 +1,8 @@
 name: Webmod Type Tests
 
-on: 
+on:
   push:
-  
+
   workflow_dispatch:
 
 
