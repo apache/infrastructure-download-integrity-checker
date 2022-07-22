@@ -1,0 +1,23 @@
+# 
+# Expected errors from test run
+# 
+ant:
+  KEYS:
+    "[CHK03] KEYS file could not be read or did not contain any valid signing keys!"
+  dist/ant/test_present.zip:
+    "[CHK01] The signature file test_present.zip.asc was signed with a key not found in the project's KEYS file: 7BA5B9750ABA977B"
+httpd:
+  dist/httpd/test_extended.zip:
+    "[CHK04] Detached signature file test_extended.zip.asc was signed by Expired (EAA491E0404FDE47) but the key expired before the file was signed!"
+  dist/httpd/test_presentnocksum.zip:
+    "[CHK02] No valid checksum files (.sha256, .sha512) found for test_presentnocksum.zip"
+  dist/httpd/test_date.zip:
+    "[CHK05] The signature file test_date.zip.asc could not be used to verify the release artifact (corrupt sig?)"
+  dist/httpd/test_empty.zip:
+    "[CHK01] The signature file test_empty.zip.asc was signed with a key not found in the project's KEYS file: verify 4294967295"
+  dist/httpd/test_absent.zip:
+    "[CHK01] The signature file test_absent.zip.asc was signed with a key not found in the project's KEYS file: 3ABFA8DD4D4EB5F1"
+  dist/httpd/test_wrong.zip:
+    "[CHK05] The signature file test_wrong.zip.asc could not be used to verify the release artifact (corrupt sig?)"
+  dist/httpd/test_presentnoasc.zip:
+    "[CHK05] No detached signature file could be found for test_presentnoasc.zip - all artifact bundles MUST have an accompanying .asc signature file!"
