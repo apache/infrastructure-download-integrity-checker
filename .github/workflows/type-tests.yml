@@ -4,6 +4,7 @@ on:
   push:
     paths-ignore:
       - '**/workflows/*.yml'
+      - 'tests/**'
 
   workflow_dispatch:
 
