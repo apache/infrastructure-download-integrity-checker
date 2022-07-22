@@ -30,4 +30,4 @@ jobs:
     - name: Unit tests
       run: |
         cd tests
-        python ../main.py --debug
+        python test.py --debug --quiet
