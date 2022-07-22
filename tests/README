@@ -16,6 +16,7 @@ Expired - present in the KEYS file(s); expired 2022-07-16
 Extended - NOT present in the KEYS file(s); extended version of Expired which expired 2022-07-21
 Subkeys - present in KEYS files; main key is non expiring, 
           but there are 7 subkeys that expired between 2022-07-21 and 2022-07-27
+          plus one non-expiring subkey
           
 dist/httpd/ contains various test cases.
 Generally the file name indicates which key was used to sign the file.
@@ -23,6 +24,7 @@ For example:
 test_absent.zip.asc was signed using the Absent key.
 test_subkey0.zip.asc was signed using the main Subkeys key
 test_subkey1.zip.asc was signed using the 1st Subkeys sub-key
+test_subkey8.zip.asc was signed using the non-expiring Subkeys sub-key
 
 test_date.zip.asc contains a date instead of a valid sig
 test_empty.zip.asc is an empty file
