@@ -2,6 +2,8 @@ name: Webmod Type Tests
 
 on:
   push:
+    paths-ignore:
+      - '**/workflows/*.yml'
 
   workflow_dispatch:
 
