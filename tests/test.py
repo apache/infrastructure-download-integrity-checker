@@ -35,16 +35,18 @@ def alert_project_intercept(project: str, errors: dict):
 
     results = RESULTS[project]
     for filepath in errors:
-        actual = errors[filepath][0]
+        actuals = set(errors[filepath])
         if filepath not in results:
-            print(f"Not expecting error for {project}: {filepath} - {actual}")
+            print(f"Not expecting any errors for {project}: {filepath}; saw {actuals}")
             total_errors += 1
         else:
-            expected = results.pop(filepath)
-            if expected != actual:
-                print(f"Unexpected error for {project}: {filepath}")
-                print(f"exp: {expected}\nact: {actual}")
-                total_errors += 1
+            expecteds = set(results.pop(filepath)) # assume all OK
+            if actuals != expecteds:
+                unexpecteds = actuals - expecteds
+                unseen = expecteds - actuals
+                print(f"Unexpected error for {project}: {filepath} - {unexpecteds}")
+                total_errors += len(unexpecteds)
+                results[filepath] = unseen
 
 if __name__ == "__main__":
     # Hack to intercept alert messages
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     import main
     main.alert_project = alert_project_intercept
     main.main()
-    # an errors unseen?
+    # any errors unseen?
     for project in RESULTS:
         for file in RESULTS[project]:
             print(f"Expected error for {project} {file} : {RESULTS[project][file]}")
