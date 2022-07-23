@@ -26,3 +26,6 @@ httpd:
     - "[CHK06] Checksum does not match checksum file test_wrongext.zip.sha512!"
     - "[CHK06] Calculated sha512 checksum of test_wrongext.zip was: 549e18e3f05ed6829ac760e9cc264b2564ed7682b9e4dc69be66b995e5cca5440267e210201db8a1b9503a0698db285a51f21dcf8ac4aaac153dbaac2fb6ddb3"
     - "[CHK06] Checksum file test_wrongext.zip.sha512 said it should have been: 195e511d52ebbc933237eda147ab6a0d03dbfdbc70122755bfb1eb92e74a14e8"
+  dist/httpd/test_oldext.zip:
+    - "[CHK02] No valid checksum files (.sha256, .sha512) found for test_oldext.zip"
+    - "[CHK02] Only weak checksum files (.md5, .sha1) found for test_oldext.zip. Project MUST use sha256/sha512!"
