@@ -156,7 +156,6 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
     errors: typing.Dict[str, str] = dict()
     path = os.path.join(CFG["dist_dir"], project) if not is_podling else os.path.join(CFG["dist_dir"], "incubator", project)
     known_exts = CFG.get("known_extensions")
-    known_fingerprints = {key["keyid"]: key for key in keychain.list_keys()}
     strong_checksum_deadline = CFG.get("strong_checksum_deadline", 0)  # If applicable, only require sha1/md5 for older files
     # Check that we HAVE keys in the key chain
     if not keychain.list_keys():
@@ -215,22 +214,33 @@ def verify_files(project: str, keychain: gnupg.GPG, is_podling: bool) -> dict:
                 if os.path.exists(asc_filepath):
                     verified = keychain.verify_file(open(asc_filepath, "rb"), data_filename=filepath)
                     if not verified.valid:
-                        if verified.key_id not in known_fingerprints:
-                            # key_id can be None e.g. if sig is garbage
-                            if not verified.key_id or "gpg-exit" in verified.key_id:  # HACK: gpg-exit key ID means gpg crashed.
-                                push_error(errors, filepath, f"[CHK05] The signature file {filename}.asc could not be used to verify the release artifact (corrupt sig?)")
+                        # Possible status values:
+                        # - 'no public key' - no further checks possible
+                        # - 'signature bad' - found the key, but the sig does not match
+                        # - 'signature valid' - implies key problem such as expired
+                        # - None - e.g. for non-empty but invalid signature (at present; this may be fixed)
+                        if verified.status is None or verified.status.startswith('error '):
+                            push_error(errors, filepath, f"[CHK05] The signature file {filename}.asc could not be used to verify the release artifact (corrupt sig?)")
+                        elif verified.status == 'no public key':
+                            push_error(errors, filepath, f"[CHK01] The signature file {filename}.asc was signed with a key not found in the project's KEYS file: {verified.key_id}")
+                        elif verified.status == 'signature bad':
+                            # unfortunately the current version of gnupg corrupts the key_id in this case
+                            push_error(errors, filepath, f"[CHK05] The signature file {filename}.asc could not be used to verify the release artifact (corrupt sig?)")
+                        elif verified.status == 'signature valid':
+                            # Assume we can get the key here, else how was the signature verified?
+                            key = keychain.list_keys(False, [verified.key_id])[0]
+                            fp_owner = key['uids'][0] # this is always in the main key
+                            if verified.key_status == 'signing key has expired':
+                                if verified.key_id == key['keyid']:
+                                    expires = key['expires']
+                                else: # must be a subkey
+                                    expires = key['subkey_info'][verified.key_id]['expires']
+                                if int(expires) < int(verified.sig_timestamp):
+                                    push_error(errors, filepath, f"[CHK04] Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key expired before the file was signed!")
                             else:
-                                push_error(errors, filepath, f"[CHK01] The signature file {filename}.asc was signed with a key not found in the project's KEYS file: {verified.key_id}")
+                                push_error(errors, filepath, f"[CHK04] Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key has status {verified.key_status}!")
                         else:
-                            fp = known_fingerprints[verified.key_id]
-                            fp_expires = int(fp["expires"])
-                            # Check if key expired before signing
-                            if fp_expires < int(verified.sig_timestamp):
-                                fp_owner = fp["uids"][0]
-                                push_error(errors, filepath, f"[CHK04] Detached signature file {filename}.asc was signed by {fp_owner} ({verified.key_id}) but the key expired before the file was signed!")
-                            # Otherwise, check for anything that isn't "signature valid"
-                            elif verified.status != "signature valid":
-                                push_error(errors, filepath, f"[CHK05] Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
+                            push_error(errors, filepath, f"[CHK05] Detached signature file {filename}.asc could not be used to verify {filename}: {verified.status}")
                 else:
                     push_error(errors, filepath, f"[CHK05] No detached signature file could be found for {filename} - all artifact bundles MUST have an accompanying .asc signature file!")
     return errors
