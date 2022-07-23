@@ -14,7 +14,7 @@ httpd:
   dist/httpd/test_date.zip:
     - "[CHK05] The signature file test_date.zip.asc could not be used to verify the release artifact (corrupt sig?)"
   dist/httpd/test_empty.zip:
-    - "[CHK01] The signature file test_empty.zip.asc was signed with a key not found in the project's KEYS file: verify 4294967295"
+    - "[CHK05] The signature file test_empty.zip.asc could not be used to verify the release artifact (corrupt sig?)"
   dist/httpd/test_absent.zip:
     - "[CHK01] The signature file test_absent.zip.asc was signed with a key not found in the project's KEYS file: 3ABFA8DD4D4EB5F1"
   dist/httpd/test_wrong.zip:
