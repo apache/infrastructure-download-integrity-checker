@@ -19,6 +19,7 @@
 """Download Integrity Checker Test Harness"""
 
 from pprint import pprint
+import os
 import sys
 import yaml
 
@@ -49,6 +50,8 @@ def alert_project_intercept(project: str, errors: dict):
                 results[filepath] = unseen
 
 if __name__ == "__main__":
+    # Ensure old modification date for testing
+    os.utime('dist/httpd/test_oldoldext.zip', (0, 0))
     # Hack to intercept alert messages
     sys.path.insert(0, '..')
     import main
