@@ -27,6 +27,20 @@ import sys
 import string
 import typing
 
+# gnpug version 0.4.9 overwrites the key_id for two message types when it should not
+# fix up the code to reset the value
+if gnupg.__version__ == '0.4.9':
+    handle = gnupg.Verify.handle_status # original method
+
+    def override_handle_status(self, key ,value):
+        save = self.key_id # in case we need to restore it
+        handle(self, key, value) # call original code
+        if key in ('UNEXPECTED', 'FAILURE'):
+            self.key_id = save # restore the overwritten value
+
+    # add our override method
+    gnupg.Verify.handle_status = override_handle_status
+
 CHUNK_SIZE = 4096
 CFG = yaml.safe_load(open("./checker.yaml"))
 assert CFG.get("gpg_homedir"), "Please specify a homedir for the GPG keychain!"
