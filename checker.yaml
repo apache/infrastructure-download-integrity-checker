@@ -17,3 +17,5 @@ known_extensions:  # Files with these extensions MUST be verifiable
   - exe
   - gz
   - zip
+# Additional entries to consider:
+# 7z bin crate deb far gem jar mar msi nar nbm rar rpm tar tgz war whl xz
