@@ -10,10 +10,10 @@ weak_checksums:  # These files may exist, and will be valid for older releases (
   - md5
 strong_checksum_deadline: 1635112800  # When sha256/sha512 was enforced. Older files don't require these
 known_extensions:  # Files with these extensions MUST be verifiable
-  - zip
-  - gz
+  - 7zip
   - bz
   - bz2
-  - 7zip
   - dmg
   - exe
+  - gz
+  - zip
