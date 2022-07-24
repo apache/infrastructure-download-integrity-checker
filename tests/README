@@ -3,6 +3,7 @@ Test tree
 This contains the data necessary to run local tests.
 - checker.yaml: points to local dist dir, but is otherwise a copy of the main file
 - email-template.txt: links to main copy
+- results.yaml: expected results
 - dist/ test tree; must contain incubator directory
 - keys/: various generated keys
 
@@ -18,6 +19,8 @@ Subkeys - present in KEYS files; main key is non expiring,
           but there are 7 subkeys that expired between 2022-07-21 and 2022-07-27
           plus one non-expiring subkey
           
+dist/ant/ contains a valid set of sigs/hashes, but no KEYS file
+
 dist/httpd/ contains various test cases.
 Generally the file name indicates which key was used to sign the file.
 For example:
@@ -30,9 +33,12 @@ test_date.zip.asc contains a date instead of a valid sig
 test_empty.zip.asc is an empty file
 test_wrong.zip.asc is a copy of test_present.zip.asc, but the corresponding file test_wrong.zip is empty
 
-To run the script:
+There are a few other test files.
+
+N.B. At present only .zip files are present; this was chosen as a representative extension that must have verification
+At some point other extensions should be added to check that the script can detect bad sigs and hashes.
+
+To run the test runner script:
 
 cd tests
-python ../main.py --debug
-
-TBA: how to check the results
+python test.py --debug --quiet

@@ -5,3 +5,6 @@ verifies download artifacts using their accompanying chekcums and detached signa
 release distribution policies ( outlined at https://infra.apache.org/release-distribution.html ).
 
 When a mismatch is detected, projects (and infra) are notified of this via email.
+
+# TODO
+- check all directories and files for errors in sigs and hashes (not just some extensions)
