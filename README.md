@@ -8,3 +8,4 @@ When a mismatch is detected, projects (and infra) are notified of this via email
 
 # TODO
 - check all directories and files for errors in sigs and hashes (not just some extensions)
+- where a project has multiple KEYS files, use the appropriate (closest) one only for checking
